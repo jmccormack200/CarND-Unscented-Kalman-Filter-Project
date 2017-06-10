@@ -75,21 +75,24 @@ UKF::~UKF() {}
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   if (!is_initialized_) {
 
-    P_ << 1, 0, 0, 0, 0,
-          0, 1, 0, 0, 0,
+    // From 7.32 should be identify with 0.15 in 1 and 2
+    P_ << 0.15, 0, 0, 0, 0,
+          0, 0.15, 0, 0, 0,
           0, 0, 1, 0, 0,
           0, 0, 0, 1, 0,
           0, 0, 0, 0, 1;
 
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
-      x_ << 0, // p_x
-            0, // p_y
-            0, // v
+      float rho = meas_package.raw_measurements_[0];
+      float phi = meas_package.raw_measurements_[1];
+      x_ << rho * cos(phi), // p_x
+            rho * sin(phi), // p_y
+            meas_package.raw_measurements_[2], // v
             0, // yaw
             0; // yaw_rate
     } else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
-      x_ << 0, // p_x
-            0, // p_y
+      x_ << meas_package.raw_measurements_[0], // p_x
+            meas_package.raw_measurements_[1], // p_y
             0, // v
             0, // yaw
             0; // yaw_rate
